@@ -1,9 +1,9 @@
 # -*- coding:utf-8 -*-
 import sys, os
 import unittest
-import nose
 from click.testing import CliRunner
 from pyNTCIREVAL.main import cli
+from tests.helper import ntcireval_formatting
 
 def p(path):
     return os.path.join(os.path.dirname(__file__), 'dat', path)
@@ -13,7 +13,6 @@ def r(name):
 
 class MainTestCase(unittest.TestCase):
     def setUp(self):
-        self.maxDiff = 10000
         pass
 
     def test_label(self):
@@ -36,7 +35,7 @@ dummy04 L2
             '-g', '1:2:3',
             p('sample.lab')])
         self.assertEqual(result.output.strip().replace(" ", ""),
-            self._formatting(r("test_compute")))
+            ntcireval_formatting(r("test_compute")))
 
     def test_compute_grade(self):
         runner = CliRunner()
@@ -45,7 +44,7 @@ dummy04 L2
             '-g', '1:4:9',
             p('sample.lab')])
         self.assertEqual(result.output.strip().replace(" ", ""),
-            self._formatting(r("test_compute_grade")))
+            ntcireval_formatting(r("test_compute_grade")))
 
     def test_compute_cutoff(self):
         runner = CliRunner()
@@ -55,7 +54,7 @@ dummy04 L2
             '--cutoffs', '2',
             p('sample.lab')])
         self.assertEqual(result.output.strip().replace(" ", ""),
-            self._formatting(r("test_compute_cutoff")))
+            ntcireval_formatting(r("test_compute_cutoff")))
 
     def test_compute_label_j(self):
         runner = CliRunner()
@@ -64,20 +63,4 @@ dummy04 L2
             '-g', '1:2:3',
             p('sample-j.lab')])
         self.assertEqual(result.output.strip().replace(" ", ""),
-            self._formatting(r("test_compute_label_j")))
-
-    OLD_NEWS = [
-        ("O-measure", "OMeasure"),
-        ("P-measure", "PMeasure"),
-        ("P-plus", "PPlusMeasure"),
-        ("Q-measure", "QMeasure"),
-        (",P", "P"),
-        (",BR", "BR"),
-        ("Q@", "QMeasure@"),
-        ("\nP@", "\nPrecision@"),
-    ]
-    def _formatting(self, output):
-        output = output.strip().replace(" ", "")
-        for old, new in self.OLD_NEWS:
-            output = output.replace(old, new)
-        return output
+            ntcireval_formatting(r("test_compute_label_j")))
