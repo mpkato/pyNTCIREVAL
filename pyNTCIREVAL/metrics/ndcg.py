@@ -7,8 +7,25 @@ class nDCG(NormalizedMetric):
         self.logb = logb
         self.cutoff = cutoff
 
-    def gain(self, grade):
-        return self._get_level(grade)
+    def gain(self, idx):
+        return self._level(idx)
 
-    def discount(self, rank, gains, discounts):
-        return (1 + math.log(rank, self.logb))
+    def discount(self, idx):
+        return 1.0 / self._orig_dcglog(self._rank(idx))
+
+    def _orig_dcglog(self, rank):
+        '''
+        This is for computing the ORIGINAL dcg [Jarvelin/Kekalainen TOIS02].
+        if i == 1:
+            return 1 (i.e. no discounting)
+        if i < b:
+            return 1 (i.e. no discounting)
+        else (Discounting is applied only if i >= b. )
+            return either logb(i)
+        '''
+        if rank == 1:
+            return 1.0
+        elif rank < self.logb:
+            return 1.0
+        else:
+            return math.log(rank, self.logb)

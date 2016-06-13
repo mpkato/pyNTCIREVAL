@@ -1,0 +1,21 @@
+ # syslen=3 jrel=10 jnonrel=1
+ # r1=2 rp=2
+ RR=                  0.5000
+ O-measure=           0.5000
+ P-measure=           0.5000
+ P-plus=              0.5000
+ AP=                  0.1167
+ Q-measure=           0.1083
+ NCUgu,P=             0.1491
+ NCUgu,BR=            0.1404
+ NCUrb,P=             0.1412
+ NCUrb,BR=            0.1314
+ RBP=                 0.0776
+ ERR=                 0.4167
+ AP@1000=             0.1167
+ Q@1000=              0.1083
+ nDCG@1000=           0.3601
+ MSnDCG@1000=         0.2899
+ P@1000=              0.0020
+ nERR@1000=           0.4830
+ Hit@1000=            1.0000

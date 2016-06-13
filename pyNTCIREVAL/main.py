@@ -10,7 +10,11 @@ from .utils import (read_grades, read_stops, read_cutoffs, read_rel_file,
     count_judged, read_labelled_ranked_list,
     output_labelled_ranked_list,
     compute_validation)
-from .metrics import nDCG, MSnDCG
+from .metrics import (Metric, RR, OMeasure, PMeasure, PPlusMeasure,
+    AP, QMeasure, NCUguP, NCUguBR, NCUrbP, NCUrbBR,
+    RBP, ERR, nERR, nDCG, MSnDCG, Precision, Hit)
+
+LEFT_PADDING = 21
 
 @click.group(context_settings={"help_option_names": ['-h', '--help']})
 def cli():
@@ -128,14 +132,36 @@ def compute(labelled_ranked_list, r, g, verbose, j, ec, gap,
         for i, num in enumerate(xrelnum)]))
 
     # output
-    print("%s # syslen=%d jrel=%d jnonrel=%d" 
+    print("%s # syslen=%d jrel=%d jnonrel=%d"
         % (out, syslen, jrelnum, xrelnum[0]))
+    print("%s # r1=%d rp=%d"
+        % (out, Metric.find_first_rel_rank(sysdoclab),
+            Metric.find_first_rel_rank(sysdoclab)))
 
     # compute metrics
     metrics = []
+    metrics.append(RR(xrelnum, grades))
+    metrics.append(OMeasure(xrelnum, grades, beta))
+    metrics.append(PMeasure(xrelnum, grades, beta))
+    metrics.append(PPlusMeasure(xrelnum, grades, beta))
+    metrics.append(AP(xrelnum, grades))
+    metrics.append(QMeasure(xrelnum, grades, beta))
+    metrics.append(NCUguP(xrelnum, grades, stops))
+    metrics.append(NCUguBR(xrelnum, grades, stops, beta))
+    metrics.append(NCUrbP(xrelnum, grades, gamma))
+    metrics.append(NCUrbBR(xrelnum, grades, gamma, beta))
+    metrics.append(RBP(xrelnum, grades, rbp))
+    metrics.append(ERR(xrelnum, grades))
     for cutoff in cutoffs:
-        metrics.append(MSnDCG(xrelnum, grades, logb, cutoff))
+        metrics.append(AP(xrelnum, grades, cutoff))
+        metrics.append(QMeasure(xrelnum, grades, beta, cutoff))
+        metrics.append(nDCG(xrelnum, grades, logb, cutoff))
+        metrics.append(MSnDCG(xrelnum, grades, cutoff))
+        metrics.append(Precision(xrelnum, grades, cutoff))
+        metrics.append(nERR(xrelnum, grades, cutoff))
+        metrics.append(Hit(xrelnum, grades, cutoff))
 
     for metric in metrics:
         score = metric.compute(sysdoclab)
-        print(metric.__class__.__name__, score)
+        print(("%s " % out +"%s=" % metric).ljust(LEFT_PADDING)
+            + "%0.4f" % score)

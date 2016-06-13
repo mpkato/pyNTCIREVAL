@@ -2,14 +2,12 @@ import math
 from .normalized_metric import NormalizedMetric
 
 class MSnDCG(NormalizedMetric):
-    def __init__(self, xrelnum, grades, logb, cutoff):
+    def __init__(self, xrelnum, grades, cutoff):
         super(MSnDCG, self).__init__(xrelnum, grades)
-        self.logb = logb
         self.cutoff = cutoff
 
-    def gain(self, grade):
-        return self._get_level(grade)
+    def gain(self, idx):
+        return self._level(idx)
 
-    def discount(self, rank, gains, discounts):
-        return math.log(rank + 1)
-
+    def discount(self, idx):
+        return 1.0 / math.log(self._rank(idx) + 1)
