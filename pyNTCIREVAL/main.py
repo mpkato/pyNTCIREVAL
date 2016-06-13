@@ -21,20 +21,19 @@ def cli():
     pass
 
 @cli.command()
-@click.argument('labelled_ranked_list', required=False,
-    type=click.File('r'), metavar='[labelled ranked list]')
+@click.argument('ranked_list', required=False,
+    type=click.File('r'), metavar='[ranked list]')
 @click.option('-r', type=click.File('r'), metavar='<relfile>', required=True,
     help='''A rel (relevance assessments) file''')
 @click.option('-j', is_flag=True, default=False,
-    help='''Treat the input as a condensed list (unjudged docs removed), '''\
-    + '''and compute condensed-list metrics including bpref.''')
+    help='''Treat the input as a condensed list (unjudged docs removed)''')
 @click.option('--ec', is_flag=True, default=False,
     help='''Equivalence class mode''')
 @click.option('--sep', default=' ', metavar='<separator>',
     help='''Input/output field separator (default: ' ').''')
 @click.option('--truncate', metavar='<rank>',
     help='''Truncate a ranked list at <rank> if specified.''')
-def label(labelled_ranked_list, r, j, ec, sep, truncate):
+def label(ranked_list, r, j, ec, sep, truncate):
     # parsing parameters
     try:
         truncate = int(truncate) if truncate is not None else None
@@ -51,7 +50,7 @@ def label(labelled_ranked_list, r, j, ec, sep, truncate):
         raise Exception("EC has not been implemented yet")
 
     # processing labelled ranked list
-    sysdoclab = read_labelled_ranked_list(labelled_ranked_list)
+    sysdoclab = read_labelled_ranked_list(ranked_list)
 
     output_labelled_ranked_list(j, truncate, qrels, sysdoclab)
 
