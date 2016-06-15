@@ -1,0 +1,258 @@
+How to use NTCIREVAL version 141207		December 2014 Tetsuya Sakai
+
+***
+SPECIAL THANKS TO MAKOTO P. KATO:
+Version 141207 is basically the same as Version 130507,
+except that Makoto touched the code to make it Mac-compatible.
+Also, "make install" now installs ntcir_eval on /usr/local/bin
+if you have the admin privileges.
+
+The only changes I made are in this README file. 
+***
+
+
+0. INTRODUCTION
+
+NTCIREVAL is a toolkit for evaluating ranked retrieval
+(e.g. NTCIR CLIR/IR4QA/CQA and TREC adhoc tasks),
+diversified ranked retrieval
+(e.g. NTCIR INTENT document ranking and TREC diversity tasks),
+ranked retrieval evaluation based on equivalence classes,
+and the NTCIR 1CLICK task.
+It can compute various retrieval effectiveness metrics,
+especially those that are based on graded relevance.
+It has been designed for UNIX/Linux environments.
+
+NTCIREVAL contains one simple C program, called ntcir_eval,
+which computes various evaluation metrics.
+The package also contains many Bourne shell scripts which might
+help you conduct evaluation experiments.
+
+Sakai [11] provides a more detailed introduction to NTCIREVAL.
+For Japanese users, there is a nice textbook written in Japanese 
+that discusses how to use NTCIREVAL: see
+http://www.f.waseda.jp/tetsuya/book.html .
+
+
+1. HOW TO INSTALL NTCIREVAL
+
+In a UNIX/Linux environment, type:
+% tar xvf NTCIREVAL.tar
+
+and you get all the files you need. Then type:
+% make
+
+and you get the C program binary "ntcir_eval".
+
+Some of the scripts contain this line:
+AWK="/usr/bin/env gawk"
+If necessary, edit the script file and modify the awk path.
+
+Move ntcir_eval and all the scripts to your bin directory,
+e.g., $HOME/bin that's included in your $path,
+and then rehash if necessary.
+
+
+2. HOW TO USE NTCIREVAL
+
+ 2.1 For standard ranked retrieval (NTCIR CLIR/IR4QA, TREC adhoc etc.)
+
+Follow the steps described in README.adhoc.
+
+ 2.2 For diversified ranked retrieval (NTCIR INTENT document ranking etc.)
+
+Follow the steps described in README.diversity.
+
+ 2.3 For ranked retrieval evaluation based on equivalence classes
+
+Follow the steps described in README.equivalence.
+
+ 2.4 FOR NTCIR Community QA answer ranking
+
+Follow the steps described in README.cqa.
+
+ 2.5 FOR NTCIR 1CLICK 
+
+Follow the steps described in README.1click. 
+
+
+3. MORE INFORMATION ON ntcir_eval (the C program)
+
+ntcir_eval has seven subcommands:
+"label", "compute", "glabel", "dinlabel", "gcompute", "irec", and "1click".
+
+Type
+% ntcir_eval
+
+to get a brief description of each subcommand.
+"label" and "compute" are for adhoc IR and CQA evaluations.
+"glabel", "dinlabel", "gcompute" and "irec" are for diversity evaluation.
+"1click" is for the NTCIR 1CLICK evaluation.
+
+Below, we discuss "label" and "compute".
+"glabel", "gcompute" and "irec" are discussed in README.diversity.
+"dinlabel" is discussed in README.diversity.din.
+"1click" is discussed in README.1click.
+
+
+ 3.1 "label" and "compute" (for adhoc IR and CQA)
+
+"label" simply reads a rel (relevance assessments) file
+and a res (system result) file and
+adds a relevance level to each document in the res file.
+
+*EXAMPLE*
+
+% cat sample.res | ntcir_eval label -r sample.rel
+dummy11 L0
+dummy01 L3
+dummy12
+dummy04 L2
+
+(sample.rel and sample.res are included in the NTCIREVAL package.)
+
+"compute" reads a rel file and a lab file (output of "label")
+and outputs evaluation metrics.
+Using the -g option, you need to specify how many relevance levels
+there are (excluding L0) and the gain value for each relevance level.
+
+*EXAMPLE*
+
+% cat sample.res | ntcir_eval label -r sample.rel | ntcir_eval compute -r sample.rel -g 1:2:3
+ # syslen=4 jrel=10 jnonrel=1
+ # r1=2 rp=2
+ RR=                  0.5000
+ O-measure=           0.5000
+ P-measure=           0.5000
+ P-plus=              0.5000
+ AP=                  0.1000
+ Q-measure=           0.0967
+ NCUgu,P=             0.1316
+ NCUgu,BR=            0.1281
+ NCUrb,P=             0.1215
+ NCUrb,BR=            0.1175
+ RBP=                 0.0761
+ ERR=                 0.4062
+ AP@1000=             0.1000
+ Q@1000=              0.0967
+ nDCG@1000=           0.3380
+ MSnDCG@1000=         0.2760
+ P@1000=              0.0020
+ nERR@1000=           0.4710
+ Hit@1000=            1.0000
+
+In the output above, 
+"syslen" is the size of the "res" file;
+"jrel" is the number of judged relevant docs;
+"jnonrel" is the number of judged nonrelevant (L0) docs;
+"r1" is the rank of the first relevant document found in the ranked list
+(for computing Reciprocal Rank and O-measure: See Section 3.2);
+"rp" is the rank of the first "most relevant" document found in the ranked list
+(for computing P-measure and P-plus: See Section 3.2).
+
+Section 3.2 provides some information on each evaluation metric.
+
+Optionally, you can use the "cutoffs" option to 
+compute precision, nDCG etc for cutoffs other than 1000 (the default cutoff):
+
+*EXAMPLE*
+
+% cat sample.res | ntcir_eval label -r sample.rel | ntcir_eval compute -r sample.rel -g 1:2:3 -cutoffs 1,10,100,1000
+
+
+Also, you can truncate the system output before computing evaluation metrics by using the "-truncate" option with the "label" subcommand:
+
+*EXAMPLE*
+
+% cat sample.res | ntcir_eval label -r sample.rel -truncate 10 | ntcir_eval compute -r sample.rel -g 1:2:3
+
+
+Moreover, ntcir_eval can compute "Condensed-List measures"
+as described by Sakai [7], where unjudged documents are ignored.
+Try using the "-j" option with the "label" subcommand:
+
+*EXAMPLE*
+
+% cat sample.res | ntcir_eval label -j -r sample.rel | ntcir_eval compute -r sample.rel -g 1:2:3
+
+If you add the "-j" option to the "compute" command in addition
+(as shown above), a family of bpref metrics as defined by Sakai [7]
+are also output.
+
+
+ntcir_eval can also compute "Equivalence-Class (EC) measures",
+which can be used for factoid QA evaluation as described in [5],
+other tasks that involve relevant items that form equivalence classes.
+See README.equivalence for details.
+
+
+ 3.2. More information on evaluation metrics
+
+Hit@k: 1 if top k contains a relevant doc, and 0 otherwise.
+P@k (precision at k): number of relevant docs in top k divided by k.
+AP (Average Precision): See, for example, [7][8].
+ERR (Expected Reciprocal Rank), nERR@k: See [2][10].
+RBP (Rank-biased Precision): See [4].
+nDCG (original nDCG): See [3].
+MSnDCG (Microsoft version of nDCG), Q-measure: See, for example, [10].
+RR, O-measure, P-measure, P-plus: See, for example, [6].
+NCU (Normalised Cumulative Utility): See [8].
+
+
+REFERENCES
+
+[1] Agrawal et al.:
+Diversifying Search Results,
+WSDM 2009.
+
+[2] Chapelle, O. et al.:
+Expected Reciprocal Rank for Graded Relevance,
+CIKM 2009.
+
+[3] Jarvelin, K. and Kelalainen, J.:
+Cumulated Gain-based Evaluation of IR Techniques,
+ACM TOIS 20(4), 2002.
+
+[4] Moffat, A. and Zobel, J.:
+Rank-biased Precision for Measurement of Retrieval Effectiveness,
+ACM TOIS 27(1), 2008.
+
+[5] Sakai, T.:
+On the Reliability of Factoid Question Answering Evaluation,
+ACM TALIP 6(3), 2007.
+
+[6] Sakai, T.:
+On the Properties of Evaluation Metrics for Finding One Highly Relevant Document,
+IPSJ TOD, Vol.48, No.SIG9 (TOD35), 2007.
+http://www.jstage.jst.go.jp/article/ipsjdc/2/0/174/_pdf
+
+[7] Sakai, T.:
+Alternatives to Bpref,
+SIGIR 2007.
+
+[8] Sakai. T. and Robertson, S.:
+Modelling A User Population for Designing Information Retrieval Metrics,
+EVIA 2008.
+http://research.nii.ac.jp/ntcir/workshop/OnlineProceedings7/pdf/EVIA2008/07-EVIA2008-SakaiT.pdf
+
+[9] Sakai, T. et al.:
+Using Graded-Relevance Metrics for Evaluating Community QA Answer Selection,
+WSDM 2011.
+
+[10] Sakai, T. and Song, R.:
+Evaluating Diversified Search Results Using Per-intent Graded Relevance,
+SIGIR 2011.
+
+[11] Sakai, T.:
+NTCIREVAL: A Generic Toolkit for Information Access Evaluation,
+FIT 2011.
+http://research.microsoft.com/en-us/people/tesakai/fit11.pdf
+
+[12] Sakai, T. et al.:
+Click the Search Button and Be Happy: Evaluating Direct and Immediate Information Access,
+CIKM 2011.
+
+[13] Sakai. T.:
+Evaluation with Informational and Navigational Intents,
+WWW 2012.
+http://www2012.wwwconference.org/proceedings/p499.pdf
