@@ -15,7 +15,8 @@ setup(
         pyNTCIREVAL=pyNTCIREVAL.main:cli
     ''',
     install_requires = [
-        'numpy'
+        'numpy',
+        'click'
     ],
     tests_require=['nose']
 )
