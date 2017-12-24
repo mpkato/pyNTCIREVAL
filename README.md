@@ -33,16 +33,6 @@ These evaluation metrics are available in the current version:
 
 ## Examples
 
-All the evaluation metric classes need `xrelnum` and `grades` as input for initialization.
-
-`xrelnum` is a list containing the number of documents of i-th relevance level,
-while `grades` is a list containing a grade for each i-th relevance level.
-
-For example, there are three levels of relevance: irrelevant, partially relevant, and highly relevant.
-Suppose a document collection includes 5 irrelevant, 3 partially relevant, and 2 highly relevant for a certain topic.
-In this case, `xrelnum = [5, 3, 2]`.
-If we want to assign 0, 1, and 2 grades for each level, `grades = [0, 1, 2]`.
-
 ### P@k
 
 ```python
@@ -68,6 +58,16 @@ assert result == 0.4
 ```
 
 ### nDCG@k (Microsoft version)
+
+Many evaluation metric classes need `xrelnum` and `grades` as input for initialization.
+
+`xrelnum` is a list containing the number of documents of i-th relevance level,
+while `grades` is a list containing a grade for each i-th relevance level.
+
+For example, there are three levels of relevance: irrelevant, partially relevant, and highly relevant.
+Suppose a document collection includes 5 irrelevant, 3 partially relevant, and 2 highly relevant for a certain topic.
+In this case, `xrelnum = [5, 3, 2]`.
+If we want to assign 0, 1, and 2 grades for each level, `grades = [0, 1, 2]`.
 
 ```python
 from pyNTCIREVAL import Labeler
