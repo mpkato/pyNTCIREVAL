@@ -118,8 +118,9 @@ def compute(labelled_ranked_list, r, g, verbose, j, ec, gap,
 
     # processing the rel file
     qrels = read_rel_file(r, sep)
-    xrelnum = Metric.compute_per_level_doc_num(maxrel, qrels)
-    jrelnum = Metric.compute_rel_num(qrels)
+    labeler = Labeler(qrels, is_condensed=j)
+    xrelnum = labeler.compute_per_level_doc_num(maxrel)
+    jrelnum = labeler.compute_rel_num()
     # TODO: count_ec_judged
     if ec:
         raise Exception("EC has not been implemented yet")

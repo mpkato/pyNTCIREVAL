@@ -35,3 +35,29 @@ class Labeler(dict):
             if self.truncate is not None and len(result) >= self.truncate:
                 break
         return result
+
+    def compute_per_level_doc_num(self, maxrel):
+        '''
+        Read relevance assessments and
+        return the number of judged X-rel docs (including 0-rel=judged nonrel).
+
+        Args:
+            maxrel: the maximum level of relevances
+
+        Returns:
+            The number of judged X-rel docs (including 0-rel=judged nonrel)
+        '''
+        xrelnum = [0] * (maxrel+1)
+        for grade in self.values():
+            xrelnum[grade] += 1
+        return xrelnum
+
+    def compute_rel_num(self):
+        '''
+        Compute the total number of judged rel docs.
+
+        Returns:
+            The total number of judged rel docs
+        '''
+        jrelnum = len([v for v in self.values() if v > 0])
+        return jrelnum
