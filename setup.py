@@ -18,5 +18,9 @@ setup(
         'numpy',
         'click'
     ],
-    tests_require=['pytest']
+    tests_require=['pytest'],
+    classifiers=[
+        'Programming Language :: Python :: 3.6',
+    ],
+    keywords=['information retrieval', 'evaluation']
 )
