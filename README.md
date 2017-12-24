@@ -31,6 +31,12 @@ These evaluation metrics are available in the current version:
 - P-measure and P-plus<sup>5</sup>.
 - NCU (Normalised Cumulative Utility)<sup>7</sup>.
 
+## Installation
+
+```bash
+pip install pyNTCIREVAL
+```
+
 ## Examples
 
 ### P@k
