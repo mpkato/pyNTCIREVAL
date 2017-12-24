@@ -75,6 +75,39 @@ class Metric(object):
         else:
             return None
 
+    @classmethod
+    def compute_per_level_doc_num(cls, maxrel, qrels):
+        '''
+        Read relevance assessments and
+        return the number of judged X-rel docs (including 0-rel=judged nonrel).
+
+        Args:
+            maxrel: the maximum level of relevances
+            qrels: a dict of a document ID and a relevance level
+
+        Returns:
+            The number of judged X-rel docs (including 0-rel=judged nonrel)
+        '''
+        xrelnum = [0] * (maxrel+1)
+        for grade in qrels.values():
+            xrelnum[grade] += 1
+        jrelnum = sum(xrelnum[1:])
+        return xrelnum
+
+    @classmethod
+    def compute_rel_num(cls, qrels):
+        '''
+        Read relevance assessments and return some statistics.
+
+        Args:
+            qrels: a dict of a document ID and a relevance level
+
+        Returns:
+            The total number of judged rel docs
+        '''
+        jrelnum = len([v for v in qrels.values() if v > 0])
+        return jrelnum
+
     def __str__(self):
         if self.cutoff is None:
             return self.__class__.__name__

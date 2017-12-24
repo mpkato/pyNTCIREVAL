@@ -2,9 +2,7 @@ import click
 import numpy as np
 
 from .utils import (read_grades, read_stops, read_cutoffs, read_rel_file,
-    count_judged, read_labelled_ranked_list,
-    output_labelled_ranked_list,
-    compute_validation)
+    read_labelled_ranked_list, output_labelled_ranked_list, compute_validation)
 from .metrics import (Metric, RR, OMeasure, PMeasure, PPlusMeasure,
     AP, QMeasure, NCUguP, NCUguBR, NCUrbP, NCUrbBR,
     RBP, ERR, nERR, nDCG, MSnDCG, Precision, Hit)
@@ -113,7 +111,8 @@ def compute(labelled_ranked_list, r, g, verbose, j, ec, gap,
 
     # processing the rel file
     qrels = read_rel_file(r, sep)
-    xrelnum, jrelnum = count_judged(maxrel, qrels)
+    xrelnum = Metric.compute_per_level_doc_num(maxrel, qrels)
+    jrelnum = Metric.compute_rel_num(qrels)
     # TODO: count_ec_judged
     if ec:
         raise Exception("EC has not been implemented yet")

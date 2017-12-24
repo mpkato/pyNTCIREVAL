@@ -108,24 +108,6 @@ def read_labelled_ranked_list(f):
     stream.close()
     return result
 
-def count_judged(maxrel, qrels):
-    '''
-    Read relevance assessments and return some statistics.
-
-    Args:
-        maxrel: the maximum level of relevances
-        qrels: a dict of a document ID and a relevance level
-
-    Returns:
-        xrelnum: the number of judged X-rel docs (including 0-rel=judged nonrel)
-        jrelnum: the total number of judged rel docs
-    '''
-    xrelnum = [0] * (maxrel+1)
-    for grade in qrels.values():
-        xrelnum[grade] += 1
-    jrelnum = sum(xrelnum[1:])
-    return xrelnum, jrelnum
-
 def output_labelled_ranked_list(j, truncate, qrels, sysdoclab):
     """
     Output a ranked list of documents with a relevance level
