@@ -1,4 +1,11 @@
 class Metric(object):
+    '''
+    A base class for all the metrics.
+
+    Args:
+        xrelnum: the number of judged X-rel docs (including 0-rel=judged nonrel).
+        grades: a list of the grade for each relevance level (except level 0).
+    '''
 
     def __init__(self, xrelnum, grades):
         self.xrelnum = xrelnum
@@ -8,7 +15,17 @@ class Metric(object):
         self.cutoff = None
 
     def compute(self, ranked_list):
+        '''
+        Compute the effectiveness score.
+
+        Args:
+            ranked_list: a list of tuples of a document ID and a relevance level,
+                i.e. [(doc_id, rel_level)].
+        Returns:
+            The effectiveness score in terms of this evaluation metric.
+        '''
         result = 0.0
+        # cache with MetricState for efficient computation
         with MetricState(self, ranked_list):
             for idx, _ in enumerate(ranked_list):
                 self.relnum += 1 if self._is_relevant(idx) else 0
@@ -19,59 +36,145 @@ class Metric(object):
                 self.discounts.append(d)
 
                 # cutoff
-                if self.cutoff and self._rank(idx) >= self.cutoff:
+                if self.cutoff and self.rank(idx) >= self.cutoff:
                     break
         return result
 
-    def _grade(self, idx):
+    def _level(self, idx):
+        '''
+        A relevance level at idx.
+
+        Args:
+            idx: an index of a ranked list
+
+        Returns:
+            A relevance level at idx.
+        '''
         _, g = self.ranked_list[idx]
         if g is None:
             return 0.0
         else:
             return g
 
-    def _level(self, idx):
-        grade = self._grade(idx)
-        if grade == 0:
+    def _grade(self, idx):
+        '''
+        A grade at idx.
+
+        Args:
+            idx: an index of a ranked list
+
+        Returns:
+            A grade at idx.
+        '''
+        level = self._level(idx)
+        if level == 0:
             return 0.0
         else:
-            return self.grades[grade-1]
+            return self.grades[level-1]
 
-    def _err_level(self, idx):
-        return self._level(idx) / (self.maxgrade + 1.0)
+    def _err_grade(self, idx):
+        '''
+        An ERR grade at idx.
 
-    def _rbp_level(self, idx):
-        return self._level(idx) / self.maxgrade
+        Args:
+            idx: an index of a ranked list
 
-    def _rank(self, idx):
-        return idx + 1
+        Returns:
+            An ERR grade at idx.
+        '''
+        return self._grade(idx) / (self.maxgrade + 1.0)
+
+    def _rbp_grade(self, idx):
+        '''
+        A RBP grade at idx.
+
+        Args:
+            idx: an index of a ranked list
+
+        Returns:
+            A RBP grade at idx.
+        '''
+        return self._grade(idx) / self.maxgrade
 
     def _is_relevant(self, idx):
-        grade = self._grade(idx)
-        return grade > 0
+        '''
+        Returns True if the document at idx is relevant,
+        i.e. the relevance level > 0
 
-    def _get_ideal_level_ranked_list(self):
+        Args:
+            idx: an index of a ranked list
+
+        Returns:
+            Returns True if the document at idx is relevant,
+            i.e. the relevance level > 0
+        '''
+        level = self._level(idx)
+        return level > 0
+
+    def _get_ideal_grade_ranked_list(self):
+        '''
+        Get the ideal ranked list of grades.
+
+        Returns:
+            Returns a list of grades sorted in the descending order.
+            Note that this method does not return
+            a ranked list of tuples of a document ID and a relevance level.
+        '''
         result = []
-        for grade, num in enumerate(self.xrelnum):
-            if grade == 0:
+        for level, num in enumerate(self.xrelnum):
+            if level == 0:
                 continue
-            result += [self.grades[grade-1] for i in range(num)]
+            result += [self.grades[level-1] for i in range(num)]
         result = sorted(result, reverse=True)
         return result
 
     @classmethod
+    def rank(cls, idx):
+        '''
+        Rank at idx, i.e. idx+1.
+
+        Args:
+            idx: an index of a ranked list
+
+        Returns:
+            Rank at idx, i.e. idx+1.
+        '''
+        return idx + 1
+
+    @classmethod
     def find_first_rel_rank(cls, ranked_list):
+        '''
+        Find the rank of the first relevant document for a given ranked list.
+
+        Args:
+            ranked_list: a list of tuples of a document ID and a relevance level,
+                i.e. [(doc_id, rel_level)].
+        Returns:
+            The rank of the first relevant document.
+            Note is returned if no relevant document.
+        '''
         for idx, (_, g) in enumerate(ranked_list):
             if g is not None and g > 0:
-                return idx + 1
+                return cls.rank(idx)
         return None
 
     @classmethod
     def find_first_max_rank(cls, ranked_list):
+        '''
+        Find the rank of the first document with the maximum relevance level for a given ranked list.
+
+        Args:
+            ranked_list: a list of tuples of a document ID and a relevance level,
+                i.e. [(doc_id, rel_level)].
+        Returns:
+            The rank of the first document with the maximum relevance.
+            Note is returned if no relevant document.
+        '''
         grades = [g if g is not None else 0 for _, g in ranked_list]
         maxgrade = max(grades)
         if maxgrade > 0:
-            return grades.index(maxgrade) + 1
+            idx = grades.index(maxgrade)
+            return cls.rank(idx)
         else:
             return None
 
@@ -109,18 +212,38 @@ class Metric(object):
         return jrelnum
 
     def __str__(self):
+        '''
+        Return the name of the class with the cutoff value.
+
+        Returns:
+            The name of the class with the cutoff value.
+        '''
         if self.cutoff is None:
             return self.__class__.__name__
         else:
             return "%s@%04d" % (self.__class__.__name__, self.cutoff)
 
 class MetricState(object):
+    '''
+    This class provides a cache mechanism for evaluation metrics.
+    Initializes the cache when it is initialized,
+    and discards the cache when it exists.
+
+    Examples:
+        with MetricState(self, ranked_list):
+            # The cache is initialized.
+            # Do something with the cache.
+        # The cache is discarded here.
+    '''
 
     def __init__(self, metric, ranked_list):
         self.metric = metric
         self.ranked_list = ranked_list
 
     def __enter__(self):
+        '''
+        Initializes all the caches.
+        '''
         self.metric.gains = []
         self.metric.discounts = []
         self.metric.relnum = 0
@@ -132,6 +255,9 @@ class MetricState(object):
             Metric.find_first_max_rank(self.ranked_list)
 
     def __exit__(self, type, value, traceback):
+        '''
+        Discards all the caches.
+        '''
         del self.metric.gains
         del self.metric.discounts
         del self.metric.relnum

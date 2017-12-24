@@ -14,11 +14,11 @@ def p_u():
 
 def p_gu(stops):
     def func(self, idx):
-        grade = self._grade(idx)
-        if grade > 0:
-            return stops[grade-1]\
-                / sum([num * stops[g-1]
-                    for g, num in enumerate(self.xrelnum) if g > 0])
+        level = self._level(idx)
+        if level > 0:
+            return stops[level-1]\
+                / sum([num * stops[l-1]
+                    for l, num in enumerate(self.xrelnum) if l > 0])
         else:
             return 0.0
     return func
@@ -38,15 +38,15 @@ class NCU(Metric):
         super(NCU, self).__init__(xrelnum, grades)
         self.sp = types.MethodType(sp, self)
         self.beta = beta
-        self.ideal_level_ranked_list = self._get_ideal_level_ranked_list()
+        self.ideal_grade_ranked_list = self._get_ideal_grade_ranked_list()
 
     def gain(self, idx):
         '''
         BR: blended ratio
         '''
-        rank = self._rank(idx)
-        g = sum([self._level(i) for i in range(rank)])
-        ig = sum(self.ideal_level_ranked_list[:rank])
+        rank = self.rank(idx)
+        g = sum([self._grade(i) for i in range(rank)])
+        ig = sum(self.ideal_grade_ranked_list[:rank])
         return (self.relnum + self.beta * g) / (rank + self.beta * ig)
 
     def discount(self, idx):

@@ -7,7 +7,7 @@ class RBP(Metric):
         self.pr = pr
 
     def gain(self, idx):
-        return self._rbp_level(idx)
+        return self._rbp_grade(idx)
 
     def discount(self, idx):
-        return (1 - self.pr) * self.pr ** (self._rank(idx) - 1)
+        return (1 - self.pr) * self.pr ** (self.rank(idx) - 1)

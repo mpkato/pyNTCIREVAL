@@ -8,10 +8,10 @@ class nDCG(NormalizedMetric):
         self.cutoff = cutoff
 
     def gain(self, idx):
-        return self._level(idx)
+        return self._grade(idx)
 
     def discount(self, idx):
-        return 1.0 / self._orig_dcglog(self._rank(idx))
+        return 1.0 / self._orig_dcglog(self.rank(idx))
 
     def _orig_dcglog(self, rank):
         '''

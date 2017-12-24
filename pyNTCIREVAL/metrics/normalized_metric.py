@@ -3,11 +3,11 @@ from .metric import Metric
 class NormalizedMetric(Metric):
     def compute(self, ranked_list):
         actual = super(NormalizedMetric, self).compute(ranked_list)
-        irl = self.ideal_ranked_list()
+        irl = self.get_ideal_ranked_list()
         ideal = super(NormalizedMetric, self).compute(irl)
         return actual / ideal
 
-    def ideal_ranked_list(self):
+    def get_ideal_ranked_list(self):
         result = []
         for grade, num in enumerate(self.xrelnum):
             result += [(i, grade)

@@ -7,7 +7,7 @@ class MSnDCG(NormalizedMetric):
         self.cutoff = cutoff
 
     def gain(self, idx):
-        return self._level(idx)
+        return self._grade(idx)
 
     def discount(self, idx):
-        return 1.0 / math.log(self._rank(idx) + 1)
+        return 1.0 / math.log(self.rank(idx) + 1)
