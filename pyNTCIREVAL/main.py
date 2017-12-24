@@ -111,7 +111,7 @@ def compute(labelled_ranked_list, r, g, verbose, j, ec, gap,
 
     # parsing parameters
     grades = read_grades(g)
-    maxrel = len(grades)
+    rel_level_num = len(grades) + 1 # the number of grades here does not include level 0.
     stops = read_stops(s) if len(s.strip()) > 0 else list(grades)
     cutoffs = read_cutoffs(cutoffs)
     logb = np.exp(1) if logb == 0 else logb # if logb == 0, then e
@@ -119,7 +119,7 @@ def compute(labelled_ranked_list, r, g, verbose, j, ec, gap,
     # processing the rel file
     qrels = read_rel_file(r, sep)
     labeler = Labeler(qrels, is_condensed=j)
-    xrelnum = labeler.compute_per_level_doc_num(maxrel)
+    xrelnum = labeler.compute_per_level_doc_num(rel_level_num)
     jrelnum = labeler.compute_rel_num()
     # TODO: count_ec_judged
     if ec:

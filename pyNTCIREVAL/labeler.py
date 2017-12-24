@@ -36,18 +36,17 @@ class Labeler(dict):
                 break
         return result
 
-    def compute_per_level_doc_num(self, maxrel):
+    def compute_per_level_doc_num(self, rel_level_num):
         '''
-        Read relevance assessments and
-        return the number of judged X-rel docs (including 0-rel=judged nonrel).
+        Return the number of judged X-rel docs (including 0-rel=judged nonrel).
 
         Args:
-            maxrel: the maximum level of relevances
+            rel_level_num: the number of relevance levels
 
         Returns:
             The number of judged X-rel docs (including 0-rel=judged nonrel)
         '''
-        xrelnum = [0] * (maxrel+1)
+        xrelnum = [0] * rel_level_num
         for grade in self.values():
             xrelnum[grade] += 1
         return xrelnum
