@@ -2,7 +2,9 @@ import click
 import numpy as np
 
 from .utils import (read_grades, read_stops, read_cutoffs, read_rel_file,
-    read_labelled_ranked_list, output_labelled_ranked_list, compute_validation)
+    read_ranked_list, read_labelled_ranked_list, output_labelled_ranked_list,
+    compute_validation)
+from .labeler import Labeler
 from .metrics import (Metric, RR, OMeasure, PMeasure, PPlusMeasure,
     AP, QMeasure, NCUguP, NCUguBR, NCUrbP, NCUrbBR,
     RBP, ERR, nERR, nDCG, MSnDCG, Precision, Hit)
@@ -50,11 +52,16 @@ def label(ranked_list, r, j, ec, sep, truncate):
     # TODO: count_ec_judged
     if ec:
         raise Exception("EC has not been implemented yet")
+    labeler = Labeler(qrels, truncate=truncate, is_condensed=j)
 
-    # processing labelled ranked list
-    sysdoclab = read_labelled_ranked_list(ranked_list)
+    # processing a ranked list
+    sysdocs = read_ranked_list(ranked_list)
 
-    output_labelled_ranked_list(j, truncate, qrels, sysdoclab)
+    # label documents with their relevance level
+    sysdoclab = labeler.label(sysdocs)
+
+    # output the ranked list of documents with their relevance level
+    output_labelled_ranked_list(sysdoclab)
 
 # compute command
 @cli.command()

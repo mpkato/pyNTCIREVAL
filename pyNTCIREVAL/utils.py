@@ -78,9 +78,32 @@ def read_rel_file(f, sep):
     f.close()
     return result
 
+def read_ranked_list(f):
+    """
+    Read the content of a ranked list file.
+    LINE FORMAT: <document id>
+
+    Args:
+        f: file stream. If f is None, use stdin.
+
+    Returns:
+        A ranked list of document IDs.
+    """
+    result = []
+    if f:
+        stream = f
+    else:
+        import sys
+        stream = sys.stdin
+    for idx, line in enumerate(stream):
+        did = line.strip()
+        result.append(did)
+    stream.close()
+    return result
+
 def read_labelled_ranked_list(f):
     """
-    Read the content of a labelled ranked list file.
+    Read the content of a labelled ranked list.
     LINE FORMAT: <document id><SEP_LABELLED_RANKED_LIST><relevance level>
         where <relevance level> := L[0-9]+
 
@@ -88,7 +111,7 @@ def read_labelled_ranked_list(f):
         f: file stream. If f is None, use stdin.
 
     Returns:
-        A ranked list of tuples of a document ID and a relevance level (int)
+        A ranked list of tuples of a document ID and a relevance level (int).
     """
     result = []
     if f:
@@ -108,32 +131,15 @@ def read_labelled_ranked_list(f):
     stream.close()
     return result
 
-def output_labelled_ranked_list(j, truncate, qrels, sysdoclab):
+def output_labelled_ranked_list(sysdoclab):
     """
-    Output a ranked list of documents with a relevance level
-    by considering the args j and truncate for the 'compute' command
+    Output a ranked list of documents with a relevance level.
 
     Args:
-        j: if True, treat the input as a condensed list (unjudged docs removed)
-        truncate: truncate a ranked list at <truncate> if specified
-        qrels: a dict of a document ID and a relevance level
         sysdoclab: a ranked list of tuples of a document ID and a relevance level.
     """
-    syslen = 0
-    for idx, didgrade in enumerate(sysdoclab):
-        if len(didgrade) != 2:
-            raise Exception("Invalid line format at Line %s" % (idx+1))
-        did, grade = didgrade
-        if grade is not None:
-            raise Exception("Already labelled at Line %s" % (idx+1))
-        grade = qrels.get(did, None)
-        if j and grade is None:
-            pass # do not output documents without rel judge
-        else:
-            print(did + (" L" + str(grade) if grade is not None else ""))
-            syslen += 1
-        if truncate is not None and syslen >= truncate:
-            break
+    for did, grade in sysdoclab:
+        print(did + (" L" + str(grade) if grade is not None else ""))
 
 def compute_validation(j, grades, stops, beta, gamma, logb, rbp,
     xrelnum, jrelnum):
