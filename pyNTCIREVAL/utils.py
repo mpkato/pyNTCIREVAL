@@ -2,44 +2,94 @@ import click
 import csv
 import re
 
-GRADE = re.compile("^L([0-9]+)$")
+LEVEL = re.compile("^L([0-9]+)$")
 SEP_LABELLED_RANKED_LIST = ' '
 DEFAULT_CUTOFFS = [1000]
 
 def read_grades(string):
+    """
+    Read grades from string '-g <g1>:<g2>:...'
+
+    Args:
+        string: '-g <g1>:<g2>:...'
+
+    Returns:
+        A list of grades. The i-th element is a grade for the i-th relevance level.
+    """
     result = _read_ints(string, ':', '-g')
     _validate_order(string, result, '-g')
     _validate_positive(string, result, '-g')
     return result
 
 def read_stops(string):
+    """
+    Read stop values for graded-uniform NCU from string '-s <s1>:<s2>:...'
+
+    Args:
+        string: '-s <s1>:<s2>:...'
+
+    Returns:
+        A list of stop values. The i-th element is a stop value for the i-th relevance level.
+    """
     result = _read_ints(string, ':', '-s')
     _validate_order(string, result, '-s')
     _validate_positive(string, result, '-s')
     return result
 
 def read_cutoffs(string):
+    """
+    Read a cutoff value from string '--cutoffs <document rank>[,<document rank>]*'
+
+    Args:
+        string: '--cutoffs <document rank>[,<document rank>]*'
+
+    Returns:
+        A list of cutoff values. Returns DEFAULT_CUTOFFS if not specified.
+    """
     if len(string) == 0:
         return DEFAULT_CUTOFFS
     return _read_ints(string, ',', '--cutoffs')
 
 def read_rel_file(f, sep):
+    """
+    Read the content of a relevance file.
+    LINE FORMAT: <document id><SEPARATOR><relevance level>
+        where <relevance level> := L[0-9]+
+
+    Args:
+        f: file stream
+        sep: a string that separates the document ID and relevance level.
+
+    Returns:
+        A dict of a document ID and a relevance level (int)
+    """
     rows = csv.reader(f, delimiter=sep)
     result = {}
     for idx, row in enumerate(rows):
         if len(row) != 2:
             raise Exception(
                 "The rel file contains an invalid line at Line %s" % (idx+1))
-        did, grade = row
+        did, level = row
         if did in result:
             raise Exception(
-                "The rel file contains different grades for the same document.")
-        grade = _parse_grade(grade, idx)
-        result[did] = grade
+                "The rel file contains different relevance levels for the same document.")
+        level = _parse_level(level, idx)
+        result[did] = level
     f.close()
     return result
 
 def read_labelled_ranked_list(f):
+    """
+    Read the content of a labelled ranked list file.
+    LINE FORMAT: <document id><SEP_LABELLED_RANKED_LIST><relevance level>
+        where <relevance level> := L[0-9]+
+
+    Args:
+        f: file stream. If f is None, use stdin.
+
+    Returns:
+        A ranked list of tuples of a document ID and a relevance level (int)
+    """
     result = []
     if f:
         stream = f
@@ -51,18 +101,24 @@ def read_labelled_ranked_list(f):
         if len(ls) == 1:
             ls.append(None)
         if len(ls) > 0:
-            did, grade = ls[:2]
-            if grade is not None:
-                grade = _parse_grade(grade, idx)
-            result.append([did, grade] + ls[2:])
+            did, level = ls[:2]
+            if level is not None:
+                level = _parse_level(level, idx)
+            result.append((did, level))
     stream.close()
     return result
 
 def count_judged(maxrel, qrels):
     '''
-    Read relevance assessments and return
-    - the number of judged X-rel docs (including 0-rel=judged nonrel)
-    - the total number of judged rel docs
+    Read relevance assessments and return some statistics.
+
+    Args:
+        maxrel: the maximum level of relevances
+        qrels: a dict of a document ID and a relevance level
+
+    Returns:
+        xrelnum: the number of judged X-rel docs (including 0-rel=judged nonrel)
+        jrelnum: the total number of judged rel docs
     '''
     xrelnum = [0] * (maxrel+1)
     for grade in qrels.values():
@@ -71,6 +127,16 @@ def count_judged(maxrel, qrels):
     return xrelnum, jrelnum
 
 def output_labelled_ranked_list(j, truncate, qrels, sysdoclab):
+    """
+    Output a ranked list of documents with a relevance level
+    by considering the args j and truncate for the 'compute' command
+
+    Args:
+        j: if True, treat the input as a condensed list (unjudged docs removed)
+        truncate: truncate a ranked list at <truncate> if specified
+        qrels: a dict of a document ID and a relevance level
+        sysdoclab: a ranked list of tuples of a document ID and a relevance level.
+    """
     syslen = 0
     for idx, didgrade in enumerate(sysdoclab):
         if len(didgrade) != 2:
@@ -89,6 +155,21 @@ def output_labelled_ranked_list(j, truncate, qrels, sysdoclab):
 
 def compute_validation(j, grades, stops, beta, gamma, logb, rbp,
     xrelnum, jrelnum):
+    '''
+    Validate the args for the 'compute' command.
+
+    Args:
+        j:
+        grades: a list of the gain value for each relevance level.
+        stops: a list of the stop value for each relevance level.
+        beta: Q-measure's beta.
+        gamma: rank-biased NCU's gamma.
+        logb: log base for DCG
+        rbp: persistence for RBP
+        xrelnum: the number of judged X-rel docs (including 0-rel=judged nonrel)
+        jrelnum: the total number of judged rel docs
+    '''
+
     if len(stops) != len(grades):
         raise click.BadParameter("the size of '-s' must be the same as '-g'")
     if beta < 0:
@@ -112,9 +193,13 @@ def _read_ints(string, sep, name):
     '''
     Return a list of int values
 
-    string: option value
-    sep: separator character
-    name: option name
+    Args:
+        string: option value
+        sep: separator character
+        name: option name
+
+    Returns:
+        [i1, i2, ...] for string '-<name> <i1><sep><i2><sep>...'
     '''
     try:
         ints = [int(i) for i in string.split(sep)]
@@ -125,11 +210,12 @@ def _read_ints(string, sep, name):
 
 def _validate_order(string, values, name):
     '''
-    Validate values that must be in ascending order
+    Validate values that must be in ascending order.
 
-    string: option value
-    values: values to be in ascending order
-    name: option name
+    Args:
+        string: option value
+        values: values to be in ascending order
+        name: option name
     '''
     for small, large in zip(values[:-1], values[1:]):
         if small > large:
@@ -138,21 +224,32 @@ def _validate_order(string, values, name):
 
 def _validate_positive(string, values, name):
     '''
-    Validate values that must be positive
+    Validate values that must be positive.
 
-    string: option value
-    values: values to be positive
-    name: option name
+    Args:
+        string: option value
+        values: values to be positive
+        name: option name
     '''
     if any([v < 0 for v in values]):
         raise click.BadParameter(
             "'%s' for option '%s' must be positive" % (string, name))
 
-def _parse_grade(grade, idx):
-    m = GRADE.match(grade)
+def _parse_level(level, idx):
+    '''
+    Parse the relevance level string.
+
+    Args:
+        level: 'L[0-9]+'.
+        idx: line index for exception report.
+
+    Returns:
+        a level converted to int.
+    '''
+    m = LEVEL.match(level)
     if m:
-        grade = int(m.group(1))
+        level = int(m.group(1))
     else:
         raise Exception(
-            "An invalid grade at Line %s" % (idx+1))
-    return grade
+            "An invalid relevance level at Line %s" % (idx+1))
+    return level

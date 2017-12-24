@@ -1,11 +1,6 @@
 import click
 import numpy as np
-from logging import getLogger, StreamHandler, DEBUG, INFO
-logger = getLogger(__name__)
-handler = StreamHandler()
-handler.setLevel(INFO)
-logger.setLevel(INFO)
-logger.addHandler(handler)
+
 from .utils import (read_grades, read_stops, read_cutoffs, read_rel_file,
     count_judged, read_labelled_ranked_list,
     output_labelled_ranked_list,
@@ -14,12 +9,21 @@ from .metrics import (Metric, RR, OMeasure, PMeasure, PPlusMeasure,
     AP, QMeasure, NCUguP, NCUguBR, NCUrbP, NCUrbBR,
     RBP, ERR, nERR, nDCG, MSnDCG, Precision, Hit)
 
+# Log settings
+from logging import getLogger, StreamHandler, DEBUG, INFO
+logger = getLogger(__name__)
+handler = StreamHandler()
+handler.setLevel(INFO)
+logger.setLevel(INFO)
+logger.addHandler(handler)
+
 LEFT_PADDING = 21
 
 @click.group(context_settings={"help_option_names": ['-h', '--help']})
 def cli():
     pass
 
+# label command
 @cli.command()
 @click.argument('ranked_list', required=False,
     type=click.File('r'), metavar='[ranked list]')
@@ -54,6 +58,7 @@ def label(ranked_list, r, j, ec, sep, truncate):
 
     output_labelled_ranked_list(j, truncate, qrels, sysdoclab)
 
+# compute command
 @cli.command()
 @click.argument('labelled_ranked_list', required=False,
     type=click.File('r'), metavar='[labelled ranked list]')
