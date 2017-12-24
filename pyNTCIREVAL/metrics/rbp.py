@@ -1,6 +1,6 @@
-from .metric import Metric
+from .grade_metric import GradeMetric
 
-class RBP(Metric):
+class RBP(GradeMetric):
 
     def __init__(self, xrelnum, grades, pr):
         super(RBP, self).__init__(xrelnum, grades)

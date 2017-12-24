@@ -1,6 +1,6 @@
-from .metric import Metric
+from .grade_metric import GradeMetric
 
-class NormalizedMetric(Metric):
+class NormalizedMetric(GradeMetric):
     def compute(self, ranked_list):
         actual = super(NormalizedMetric, self).compute(ranked_list)
         irl = self.get_ideal_ranked_list()

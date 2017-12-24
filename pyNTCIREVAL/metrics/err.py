@@ -1,7 +1,7 @@
-from .metric import Metric
+from .grade_metric import GradeMetric
 import numpy as np
 
-class ERR(Metric):
+class ERR(GradeMetric):
     def gain(self, idx):
         return self._err_grade(idx)
 

@@ -151,7 +151,7 @@ def compute(labelled_ranked_list, r, g, verbose, j, ec, gap,
 
     # compute metrics
     metrics = []
-    metrics.append(RR(xrelnum, grades))
+    metrics.append(RR())
     metrics.append(OMeasure(xrelnum, grades, beta))
     metrics.append(PMeasure(xrelnum, grades, beta))
     metrics.append(PPlusMeasure(xrelnum, grades, beta))
@@ -168,9 +168,9 @@ def compute(labelled_ranked_list, r, g, verbose, j, ec, gap,
         metrics.append(QMeasure(xrelnum, grades, beta, cutoff))
         metrics.append(nDCG(xrelnum, grades, logb, cutoff))
         metrics.append(MSnDCG(xrelnum, grades, cutoff))
-        metrics.append(Precision(xrelnum, grades, cutoff))
+        metrics.append(Precision(cutoff))
         metrics.append(nERR(xrelnum, grades, cutoff))
-        metrics.append(Hit(xrelnum, grades, cutoff))
+        metrics.append(Hit(cutoff))
 
     for metric in metrics:
         score = metric.compute(sysdoclab)

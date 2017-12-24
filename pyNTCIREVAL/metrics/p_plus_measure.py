@@ -1,6 +1,6 @@
-from .metric import Metric
+from .grade_metric import GradeMetric
 
-class PPlusMeasure(Metric):
+class PPlusMeasure(GradeMetric):
 
     def __init__(self, xrelnum, grades, beta):
         super(PPlusMeasure, self).__init__(xrelnum, grades)

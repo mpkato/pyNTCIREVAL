@@ -2,8 +2,7 @@ from .metric import Metric
 
 class Hit(Metric):
 
-    def __init__(self, xrelnum, grades, cutoff):
-        super(Hit, self).__init__(xrelnum, grades)
+    def __init__(self, cutoff):
         self.cutoff = cutoff
 
     def gain(self, idx):

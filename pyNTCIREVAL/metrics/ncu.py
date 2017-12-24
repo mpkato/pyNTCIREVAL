@@ -1,4 +1,4 @@
-from .metric import Metric
+from .grade_metric import GradeMetric
 import types
 
 def p_u():
@@ -32,7 +32,7 @@ def p_rb(gamma):
             return 0.0
     return func
 
-class NCU(Metric):
+class NCU(GradeMetric):
 
     def __init__(self, xrelnum, grades, sp, beta):
         super(NCU, self).__init__(xrelnum, grades)
