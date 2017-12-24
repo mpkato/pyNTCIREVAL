@@ -18,5 +18,5 @@ setup(
         'numpy',
         'click'
     ],
-    tests_require=['nose']
+    tests_require=['pytest']
 )

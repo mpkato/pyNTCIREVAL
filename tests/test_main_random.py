@@ -1,12 +1,12 @@
 # -*- coding:utf-8 -*-
 import tempfile
 import os
-import unittest
 import subprocess
 import numpy as np
 from click.testing import CliRunner
 from pyNTCIREVAL.main import cli
 from tests.helper import ntcireval_formatting
+import pytest
 
 from logging import getLogger, StreamHandler, DEBUG, INFO
 logger = getLogger(__name__)
@@ -15,36 +15,39 @@ handler.setLevel(DEBUG)
 logger.setLevel(DEBUG)
 logger.addHandler(handler)
 
-class MainRandomTestCase(unittest.TestCase):
+class TestMainRandom(object):
     NUM_DOCS = 1000
     NUM_RES = 100
     MAX_GRADE = 3
     NON_LABEL_PROB = 0.05
     LOOP = 10
 
-    def setUp(self):
-        self.maxDiff = None
+    @pytest.yield_fixture(autouse=True)
+    def trash_tmpfiles(self):
         self.tmpfiles = []
-
-    def tearDown(self):
+        yield
         for filepath in self.tmpfiles:
             if os.path.exists(filepath):
                 os.remove(filepath)
 
-    def test_compute(self):
-        resfile = self._generate_random_res_file()
-        relfile = self._generate_random_rel_file()
-        labfile = self._label(relfile, resfile)
-        res = self._run_ntcireval(relfile, labfile)
-        runner = CliRunner()
-        result = runner.invoke(cli, ['compute',
-            '-r', relfile,
-            '-g', '1:2:3',
-            labfile])
-        self.assertEqual(result.output.strip().replace(" ", ""),
-            ntcireval_formatting(res))
-        logger.info("\n" + "\n".join(res.split("\n")))
-        logger.info("\n" + "\n".join(result.output.split("\n")))
+    @classmethod
+    def _test_compute_skeleton(cls, seed):
+        def test_compute(self):
+            np.random.seed(seed)
+            resfile = self._generate_random_res_file()
+            relfile = self._generate_random_rel_file()
+            labfile = self._label(relfile, resfile)
+            res = self._run_ntcireval(relfile, labfile)
+            runner = CliRunner()
+            result = runner.invoke(cli, ['compute',
+                '-r', relfile,
+                '-g', '1:2:3',
+                labfile])
+            assert result.output.strip().replace(" ", "") ==\
+                ntcireval_formatting(res)
+            logger.info("\n" + "\n".join(res.split("\n")))
+            logger.info("\n" + "\n".join(result.output.split("\n")))
+        return test_compute
 
     def _run_ntcireval(self, relfile, labfile):
         args = [os.path.join(os.path.dirname(__file__), 
@@ -93,5 +96,6 @@ class MainRandomTestCase(unittest.TestCase):
                 f.write("D%010d L%s\n" % (i, g))
         return tf
 
-for i in range(MainRandomTestCase.LOOP):
-    setattr(MainRandomTestCase, 'test_compute_%06d' % i, MainRandomTestCase.test_compute)
+for i in range(TestMainRandom.LOOP):
+    setattr(TestMainRandom, 'test_compute_%06d' % i,
+        TestMainRandom._test_compute_skeleton(i))
