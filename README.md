@@ -1,5 +1,7 @@
 # pyNTCIREVAL
 
+[![CircleCI](https://circleci.com/gh/mpkato/pyNTCIREVAL.svg?style=svg)](https://circleci.com/gh/mpkato/pyNTCIREVAL)
+
 ## Introduction
 
 pyNTCIREVAL is a python version of NTCIREVAL http://research.nii.ac.jp/ntcir/tools/ntcireval-en.html
