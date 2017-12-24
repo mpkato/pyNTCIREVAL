@@ -1,6 +1,9 @@
 from .metric import Metric
 
 class RR(Metric):
+    '''
+    Reciprocal rank
+    '''
     def gain(self, idx):
         return 1.0 / self.rank(idx)
 

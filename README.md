@@ -102,7 +102,7 @@ assert result == 0.6131471927654584
 
 [1] Burges, C. et al.: 
 Learning to rank using gradient descent, 
-ICML 2005,
+ICML 2005.
 
 [2] Chapelle, O. et al.:
 Expected Reciprocal Rank for Graded Relevance,

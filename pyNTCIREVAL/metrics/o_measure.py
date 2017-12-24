@@ -1,6 +1,17 @@
 from .grade_metric import GradeMetric
 
 class OMeasure(GradeMetric):
+    '''
+    O-measure
+
+    See Sakai, T.: On the Properties of Evaluation Metrics for Finding One Highly Relevant Document,
+    IPSJ TOD, Vol.48, No.SIG9 (TOD35), 2007.
+
+    Args:
+        xrelnum: the number of judged X-rel docs (including 0-rel=judged nonrel).
+        grades: a list of the grade for each relevance level (except level 0).
+        beta: a parameter for blended ratio
+    '''
 
     def __init__(self, xrelnum, grades, beta):
         super(OMeasure, self).__init__(xrelnum, grades)

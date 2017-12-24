@@ -1,6 +1,12 @@
 from .metric import Metric
 
 class Precision(Metric):
+    '''
+    Precision
+
+    Args:
+        cutoff: the evaluation metric is computed for from the top to this rank if specified
+    '''
 
     def __init__(self, cutoff):
         self.cutoff = cutoff
