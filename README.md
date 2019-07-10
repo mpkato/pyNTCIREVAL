@@ -68,12 +68,12 @@ assert result == 0.4
 Many evaluation metric classes need `xrelnum` and `grades` as input for initialization.
 
 `xrelnum` is a list containing the number of documents of i-th relevance level,
-while `grades` is a list containing a grade for each i-th relevance level.
+while `grades` is a list containing a grade for each i-th relevance level (except for level 0).
 
 For example, there are three levels of relevance: irrelevant, partially relevant, and highly relevant.
 Suppose a document collection includes 5 irrelevant, 3 partially relevant, and 2 highly relevant for a certain topic.
 In this case, `xrelnum = [5, 3, 2]`.
-If we want to assign 0, 1, and 2 grades for each level, `grades = [0, 1, 2]`.
+If we want to assign 0, 1, and 2 grades for each level, then `grades = [1, 2]`.
 
 ```python
 from pyNTCIREVAL import Labeler
@@ -81,7 +81,7 @@ from pyNTCIREVAL.metrics import MSnDCG
 
 # dict of { document ID: relevance level }
 qrels = {0: 2, 1: 0, 2: 1, 3: 0, 4: 1, 5: 0, 6: 0, 7: 2, 8: 0, 9: 0} 
-grades = [0, 1, 2] # a grade for each relevance level
+grades = [1, 2] # a grade for relevance levels 1 and 2 (Note that level 0 is excluded)
 ranked_list = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9] # a list of document IDs
 
 # labeling: [doc_id] -> [(doc_id, rel_level)]
@@ -100,7 +100,7 @@ assert xrelnum == [6, 2, 2]
 # Let's compute nDCG@5
 metric = MSnDCG(xrelnum, grades, cutoff=5)
 result = metric.compute(labeled_ranked_list)
-assert result == 0.6131471927654584
+assert result == 0.6885695823073614
 ```
 
 
