@@ -4,10 +4,10 @@ from setuptools import setup
 setup(
     name = "pyNTCIREVAL",
     packages = ["pyNTCIREVAL", "pyNTCIREVAL.metrics"],
-    version = "0.0.2",
+    version = "0.0.3",
     description = "Python version of NTCIREVAL",
     author = "Makoto P. Kato",
-    author_email = "kato@dl.kuis.kyoto-u.ac.jp",
+    author_email = "mpkato@slis.tsukuba.ac.jp",
     license     = "MIT License",
     url = "https://github.com/mpkato/pyNTCIREVAL",
     entry_points='''
