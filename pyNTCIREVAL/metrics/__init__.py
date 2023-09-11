@@ -16,4 +16,5 @@ from .ndcg import nDCG
 from .ms_ndcg import MSnDCG
 from .precision import Precision
 from .hit import Hit
+from .recall import Recall
 
